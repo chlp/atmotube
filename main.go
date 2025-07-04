@@ -83,7 +83,7 @@ func main() {
 	go func() {
 		adapter.Scan(func(adapter *bluetooth.Adapter, result bluetooth.ScanResult) {
 			if strings.TrimSpace(result.LocalName()) == "ATMOTUBE" {
-				fmt.Printf("✅ Найдено: %s [%s]\n", result.LocalName(), result.Address.String())
+				fmt.Printf("✅ Found: %s [%s]\n", result.LocalName(), result.Address.String())
 				ch <- result
 				adapter.StopScan()
 			}
@@ -99,7 +99,7 @@ func main() {
 
 	var err error
 	device, err = adapter.Connect(result.Address, bluetooth.ConnectionParams{})
-	must("подключение", err)
+	must("connecting", err)
 
 	fmt.Println("🔗 Connected. Searching for services...")
 
