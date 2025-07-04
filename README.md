@@ -54,7 +54,7 @@ Tested and verified on **macOS only** using the built-in Bluetooth stack.
 ## Protocol Reference
 
 This project is based on the official Bluetooth API specification provided by Atmotube:  
-**ATMO Bluetooth API.pdf** — stored in the root of this repository and originally available at https://support.atmotube.com/en/articles/10364981-bluetooth-api
+[ATMO Bluetooth API.pdf](ATMO Bluetooth API.pdf) — stored in the root of this repository and originally available at https://support.atmotube.com/en/articles/10364981-bluetooth-api
 
 ## Requirements
 
