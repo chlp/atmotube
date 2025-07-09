@@ -101,13 +101,13 @@ func UpdateTVOC(tvoc float64) {
 	mu.Unlock()
 }
 
-func statusTVOC(tvoc float64) string {
+func statusTVOC(ppb float64) string {
 	switch {
-	case tvoc <= 0:
+	case ppb <= 0:
 		return "none"
-	case tvoc <= 0.3:
+	case ppb <= 250:
 		return "ok"
-	case tvoc <= 0.6:
+	case ppb <= 500:
 		return "warn"
 	default:
 		return "critical"
