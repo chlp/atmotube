@@ -20,20 +20,72 @@ The HTTP API returns the most recent measurement in the following JSON structure
 
 ```json
 {
-    "pm1":      {"name": "PM1",        "value": 3.33,   "unit": "µg/m³"},
-    "pm2_5":    {"name": "PM2.5",      "value": 5.66,   "unit": "µg/m³"},
-    "pm4":      {"name": "PM4",        "value": 5.13,   "unit": "µg/m³"},
-    "pm10":     {"name": "PM10",       "value": 7.55,   "unit": "µg/m³"},
-    "tvoc":     {"name": "TVOC",       "value": 291.0,  "unit": "ppb"},
-    "temp":     {"name": "Temperature","value": 25.0,   "unit": "°C"},
-    "humidity": {"name": "Humidity",   "value": 39.0,   "unit": "%"},
-    "pressure": {"name": "Pressure",   "value": 1012.1, "unit": "hPa"}
+  "PM1": {
+    "name": "pm1",
+    "value": 4.38,
+    "unit": "µg/m³",
+    "status": "ok"
+  },
+  "PM25": {
+    "name": "pm2_5",
+    "value": 5.93,
+    "unit": "µg/m³",
+    "status": "ok"
+  },
+  "PM4": {
+    "name": "pm4",
+    "value": 4.63,
+    "unit": "µg/m³",
+    "status": "ok"
+  },
+  "PM10": {
+    "name": "pm10",
+    "value": 7.02,
+    "unit": "µg/m³",
+    "status": "ok"
+  },
+  "TVOC": {
+    "name": "tvoc",
+    "value": 0.109,
+    "unit": "mg/m³",
+    "status": "ok"
+  },
+  "Temp": {
+    "name": "temp",
+    "value": 24.4,
+    "unit": "celsius",
+    "status": "ok"
+  },
+  "Humidity": {
+    "name": "humidity",
+    "value": 37,
+    "unit": "%",
+    "status": "ok"
+  },
+  "Pressure": {
+    "name": "pressure",
+    "value": 1013.8,
+    "unit": "hPa",
+    "status": "ok"
+  },
+  "Battery": {
+    "name": "battery",
+    "value": 44,
+    "unit": "%",
+    "status": "warn"
+  },
+  "BluetoothConnection": {
+    "name": "bluetooth_connection",
+    "value": 1,
+    "unit": "connected",
+    "status": "ok"
+  }
 }
 ```
 
 ## Example Terminal Output
 
-```bash
+```
 🔍 Searching for Atmotube...  
 ✅ Found: ATMOTUBE [35705aeb-5c28-a8a4-b1a4-3b1370060b09]  
 🔗 Connected. Searching for services...  
