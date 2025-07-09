@@ -136,10 +136,21 @@ func parse3BytesLE(b []byte) uint32 {
 func subscribePM(char bluetooth.DeviceCharacteristic) {
 	err := char.EnableNotifications(func(buf []byte) {
 		if len(buf) >= 12 {
-			pm1 := float64(parse3BytesLE(buf[0:3])) / 100.0
-			pm25 := float64(parse3BytesLE(buf[3:6])) / 100.0
-			pm10 := float64(parse3BytesLE(buf[6:9])) / 100.0
-			pm4 := float64(parse3BytesLE(buf[9:12])) / 100.0
+			raw1 := parse3BytesLE(buf[0:3])
+			raw25 := parse3BytesLE(buf[3:6])
+			raw10 := parse3BytesLE(buf[6:9])
+			raw4 := parse3BytesLE(buf[9:12])
+
+			if raw1 == 0xFFFFFF && raw25 == 0xFFFFFF && raw10 == 0xFFFFFF && raw4 == 0xFFFFFF {
+				fmt.Println("⚠️ Skipping invalid PM data (0xFFFFFF)")
+				return
+			}
+
+			pm1 := float64(raw1) / 100.0
+			pm25 := float64(raw25) / 100.0
+			pm10 := float64(raw10) / 100.0
+			pm4 := float64(raw4) / 100.0
+
 			UpdatePM(pm1, pm25, pm4, pm10)
 			fmt.Printf("🌁 PM1: %.2f, PM2.5: %.2f, PM4: %.2f, PM10: %.2f µg/m³\n", pm1, pm25, pm4, pm10)
 		} else {

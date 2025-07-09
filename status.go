@@ -41,6 +41,7 @@ func UpdatePM(pm1, pm25, pm4, pm10 float64) {
 	data.PM10.Status = statusPM10(pm10)
 	mu.Unlock()
 }
+
 func statusPM1(pm float64) string {
 	switch {
 	case pm <= 0:
@@ -95,7 +96,8 @@ func statusPM10(pm float64) string {
 
 func UpdateTVOC(tvoc float64) {
 	mu.Lock()
-	data.TVOC = Metric{"tvoc", tvoc, "mg/m³", statusTVOC(tvoc)}
+	data.TVOC.Value = tvoc
+	data.TVOC.Status = statusTVOC(tvoc)
 	mu.Unlock()
 }
 
@@ -186,10 +188,12 @@ func UpdateBluetoothStatus(status string) {
 	if status == "ok" {
 		v = 1
 	}
+	mu.Lock()
 	data.BluetoothConnection = Metric{
 		Name:   "bluetooth_connection",
 		Value:  v,
 		Unit:   "connected",
 		Status: status,
 	}
+	mu.Unlock()
 }
