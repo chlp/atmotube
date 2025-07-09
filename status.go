@@ -1,11 +1,15 @@
 package main
 
+import "sync"
+
 type Metric struct {
 	Name   string  `json:"name"`
 	Value  float64 `json:"value"`
 	Unit   string  `json:"unit"`
 	Status string  `json:"status"`
 }
+
+var mu sync.RWMutex
 
 var data = struct {
 	PM1, PM25, PM4, PM10           Metric
@@ -17,7 +21,7 @@ var data = struct {
 	PM25:                Metric{"pm2_5", 0, "µg/m³", "none"},
 	PM4:                 Metric{"pm4", 0, "µg/m³", "none"},
 	PM10:                Metric{"pm10", 0, "µg/m³", "none"},
-	TVOC:                Metric{"tvoc", 0, "mg/m³", "none"},
+	TVOC:                Metric{"tvoc", 0, "ppb", "none"},
 	Temp:                Metric{"temp", 0, "celsius", "none"},
 	Humidity:            Metric{"humidity", 0, "%", "none"},
 	Pressure:            Metric{"pressure", 0, "hPa", "none"},
@@ -26,44 +30,17 @@ var data = struct {
 }
 
 func UpdatePM(pm1, pm25, pm4, pm10 float64) {
-	data.PM1 = Metric{"pm1", pm1, "µg/m³", statusPM1(pm1)}
-	data.PM25 = Metric{"pm2_5", pm25, "µg/m³", statusPM25(pm25)}
-	data.PM4 = Metric{"pm4", pm4, "µg/m³", statusPM4(pm4)}
-	data.PM10 = Metric{"pm10", pm10, "µg/m³", statusPM10(pm10)}
+	mu.Lock()
+	data.PM1.Value = pm1
+	data.PM1.Status = statusPM1(pm1)
+	data.PM25.Value = pm25
+	data.PM25.Status = statusPM25(pm25)
+	data.PM4.Value = pm4
+	data.PM4.Status = statusPM4(pm4)
+	data.PM10.Value = pm10
+	data.PM10.Status = statusPM10(pm10)
+	mu.Unlock()
 }
-
-func UpdateTVOC(tvoc float64) {
-	data.TVOC = Metric{"tvoc", tvoc, "mg/m³", statusTVOC(tvoc)}
-}
-
-func UpdateBME280(temp, humidity, pressure float64) {
-	data.Temp = Metric{"temp", temp, "celsius", statusTemperature(temp)}
-	data.Humidity = Metric{"humidity", humidity, "%", statusHumidity(humidity)}
-	data.Pressure = Metric{"pressure", pressure, "hPa", statusPressure(pressure)}
-}
-
-func UpdateBattery(percent float64) {
-	data.Battery = Metric{
-		Name:   "battery",
-		Value:  percent,
-		Unit:   "%",
-		Status: statusBattery(percent),
-	}
-}
-
-func statusTVOC(tvoc float64) string {
-	switch {
-	case tvoc <= 0:
-		return "none"
-	case tvoc <= 0.3:
-		return "ok"
-	case tvoc <= 0.6:
-		return "warn"
-	default:
-		return "critical"
-	}
-}
-
 func statusPM1(pm float64) string {
 	switch {
 	case pm <= 0:
@@ -116,6 +93,35 @@ func statusPM10(pm float64) string {
 	}
 }
 
+func UpdateTVOC(tvoc float64) {
+	mu.Lock()
+	data.TVOC = Metric{"tvoc", tvoc, "mg/m³", statusTVOC(tvoc)}
+	mu.Unlock()
+}
+
+func statusTVOC(tvoc float64) string {
+	switch {
+	case tvoc <= 0:
+		return "none"
+	case tvoc <= 0.3:
+		return "ok"
+	case tvoc <= 0.6:
+		return "warn"
+	default:
+		return "critical"
+	}
+}
+
+func UpdateBME280(temp, humidity, pressure float64) {
+	mu.Lock()
+	data.Temp.Value = temp
+	data.Temp.Status = statusTemperature(temp)
+	data.Humidity.Value = humidity
+	data.Humidity.Status = statusHumidity(humidity)
+	data.Pressure.Value = pressure
+	data.Pressure.Status = statusPressure(pressure)
+	mu.Unlock()
+}
 func statusTemperature(celsius float64) string {
 	switch {
 	case celsius <= -100:
@@ -153,6 +159,13 @@ func statusPressure(hpa float64) string {
 	default:
 		return "critical"
 	}
+}
+
+func UpdateBattery(percent float64) {
+	mu.Lock()
+	data.Battery.Value = percent
+	data.Battery.Status = statusBattery(percent)
+	mu.Unlock()
 }
 
 func statusBattery(p float64) string {

@@ -14,6 +14,14 @@ import (
 
 var adapter = bluetooth.DefaultAdapter
 
+var (
+	uuidAtmotubeService      = "db450001-8e9a-4818-add7-6ed94a328ab4"
+	uuidSGPC3Characteristic  = "db450002-8e9a-4818-add7-6ed94a328ab4"
+	uuidBME280Characteristic = "db450003-8e9a-4818-add7-6ed94a328ab4"
+	uuidStatusCharacteristic = "db450004-8e9a-4818-add7-6ed94a328ab4"
+	uuidPMCharacteristic     = "db450005-8e9a-4818-add7-6ed94a328ab4"
+)
+
 func connectToAtmotube() {
 	must("enable adapter", adapter.Enable())
 
@@ -25,11 +33,11 @@ func connectToAtmotube() {
 	defer cancel()
 
 	go func() {
-		adapter.Scan(func(adapter *bluetooth.Adapter, result bluetooth.ScanResult) {
+		_ = adapter.Scan(func(adapter *bluetooth.Adapter, result bluetooth.ScanResult) {
 			if strings.TrimSpace(result.LocalName()) == "ATMOTUBE" {
 				fmt.Printf("✅ Found: %s [%s]\n", result.LocalName(), result.Address.String())
 				ch <- result
-				adapter.StopScan()
+				_ = adapter.StopScan()
 			}
 		})
 	}()
@@ -47,24 +55,24 @@ func connectToAtmotube() {
 
 	UpdateBluetoothStatus("warn")
 
-	services, err := device.DiscoverServices([]bluetooth.UUID{uuidFromString("DB450001-8E9A-4818-ADD7-6ED94A328AB4")})
+	services, err := device.DiscoverServices([]bluetooth.UUID{uuidFromString(uuidAtmotubeService)})
 	must("discovering services", err)
 
 	for _, service := range services {
 		chars, err := service.DiscoverCharacteristics(nil)
 		must("discovering characteristics", err)
 		for _, char := range chars {
-			switch char.UUID() {
-			case uuidFromString("DB450002-8E9A-4818-ADD7-6ED94A328AB4"):
+			switch char.UUID().String() {
+			case uuidSGPC3Characteristic:
 				subscribeSGPC3(char)
-			case uuidFromString("DB450003-8E9A-4818-ADD7-6ED94A328AB4"):
+			case uuidBME280Characteristic:
 				subscribeBME280(char)
-			case uuidFromString("DB450004-8E9A-4818-ADD7-6ED94A328AB4"):
+			case uuidStatusCharacteristic:
 				subscribeStatus(char)
-			case uuidFromString("DB450005-8E9A-4818-ADD7-6ED94A328AB4"):
+			case uuidPMCharacteristic:
 				subscribePM(char)
 			default:
-				fmt.Printf("ℹ️ Unknown characteristic: %s\n", char.UUID().String())
+				fmt.Printf("ℹ️ Wrong characteristic: %s\n", char.UUID().String())
 			}
 		}
 	}
@@ -82,34 +90,40 @@ func uuidFromString(s string) bluetooth.UUID {
 }
 
 func subscribeSGPC3(char bluetooth.DeviceCharacteristic) {
-	char.EnableNotifications(func(buf []byte) {
+	err := char.EnableNotifications(func(buf []byte) {
 		if len(buf) >= 2 {
 			tvocPpb := binary.LittleEndian.Uint16(buf[0:2])
-			UpdateTVOC(float64(tvocPpb) / 1000.0)
+			UpdateTVOC(float64(tvocPpb))
+			fmt.Printf("🌫️ TVOC (SGPC3): %d ppb\n", tvocPpb)
 		}
 	})
+	must("SGPC3", err)
 }
 
 func subscribeBME280(char bluetooth.DeviceCharacteristic) {
-	char.EnableNotifications(func(buf []byte) {
+	err := char.EnableNotifications(func(buf []byte) {
 		if len(buf) >= 8 {
-			humidity := float64(buf[0])
+			humidity := buf[0]
 			pressurePa := binary.LittleEndian.Uint32(buf[2:6])
-			pressure := float64(pressurePa) / 100.0
-			temp := float64(binary.LittleEndian.Uint16(buf[6:8])) / 100.0
-			UpdateBME280(temp, humidity, pressure)
+			pressureHpa := float64(pressurePa) / 100.0
+			tp := binary.LittleEndian.Uint16(buf[6:8])
+			temp := float64(tp) / 100.0
+			UpdateBME280(temp, float64(humidity), pressureHpa)
+			fmt.Printf("🌡 Temperature: %.1f°C, 💧 Humidity: %d%%, 📟 Pressure: %.1f hPa\n", temp, humidity, pressureHpa)
 		}
 	})
+	must("BME280", err)
 }
 
 func subscribeStatus(char bluetooth.DeviceCharacteristic) {
-	char.EnableNotifications(func(buf []byte) {
+	err := char.EnableNotifications(func(buf []byte) {
 		if len(buf) >= 2 {
 			battery := buf[1]
 			UpdateBattery(float64(battery))
 			fmt.Printf("🔋 Battery: %d%%\n", battery)
 		}
 	})
+	must("Status", err)
 }
 
 func parse3BytesLE(b []byte) uint32 {
@@ -120,15 +134,19 @@ func parse3BytesLE(b []byte) uint32 {
 }
 
 func subscribePM(char bluetooth.DeviceCharacteristic) {
-	char.EnableNotifications(func(buf []byte) {
+	err := char.EnableNotifications(func(buf []byte) {
 		if len(buf) >= 12 {
 			pm1 := float64(parse3BytesLE(buf[0:3])) / 100.0
 			pm25 := float64(parse3BytesLE(buf[3:6])) / 100.0
 			pm10 := float64(parse3BytesLE(buf[6:9])) / 100.0
 			pm4 := float64(parse3BytesLE(buf[9:12])) / 100.0
 			UpdatePM(pm1, pm25, pm4, pm10)
+			fmt.Printf("🌁 PM1: %.2f, PM2.5: %.2f, PM4: %.2f, PM10: %.2f µg/m³\n", pm1, pm25, pm4, pm10)
+		} else {
+			fmt.Printf("⚠️ Wrong data for PM: %d byte\n", len(buf))
 		}
 	})
+	must("PM", err)
 }
 
 func must(msg string, err error) {
