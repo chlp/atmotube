@@ -20,66 +20,16 @@ The HTTP API returns the most recent measurement in the following JSON structure
 
 ```json
 {
-  "PM1": {
-    "name": "pm1",
-    "value": 4.38,
-    "unit": "µg/m³",
-    "status": "ok"
-  },
-  "PM25": {
-    "name": "pm2_5",
-    "value": 5.93,
-    "unit": "µg/m³",
-    "status": "ok"
-  },
-  "PM4": {
-    "name": "pm4",
-    "value": 4.63,
-    "unit": "µg/m³",
-    "status": "ok"
-  },
-  "PM10": {
-    "name": "pm10",
-    "value": 7.02,
-    "unit": "µg/m³",
-    "status": "ok"
-  },
-  "TVOC": {
-    "name": "tvoc",
-    "value": 0.109,
-    "unit": "mg/m³",
-    "status": "ok"
-  },
-  "Temp": {
-    "name": "temp",
-    "value": 24.4,
-    "unit": "celsius",
-    "status": "ok"
-  },
-  "Humidity": {
-    "name": "humidity",
-    "value": 37,
-    "unit": "%",
-    "status": "ok"
-  },
-  "Pressure": {
-    "name": "pressure",
-    "value": 1013.8,
-    "unit": "hPa",
-    "status": "ok"
-  },
-  "Battery": {
-    "name": "battery",
-    "value": 44,
-    "unit": "%",
-    "status": "warn"
-  },
-  "BluetoothConnection": {
-    "name": "bluetooth_connection",
-    "value": 1,
-    "unit": "connected",
-    "status": "ok"
-  }
+	"PM1": {"name": "pm1", "value": 2.85,"unit": "µg/m³", "status": "ok"},
+	"PM25": {"name": "pm2_5", "value": 4.25,"unit": "µg/m³", "status": "ok"},
+	"PM4": {"name": "pm4", "value": 3.01,"unit": "µg/m³", "status": "ok"},
+	"PM10": {"name": "pm10", "value": 5.24,"unit": "µg/m³", "status": "ok"},
+	"TVOC": {"name": "tvoc", "value": 223,"unit": "ppb", "status": "ok"},
+	"Temp": {"name": "temp", "value": 20.9,"unit": "celsius", "status": "ok"},
+	"Humidity": {"name": "humidity", "value": 43,"unit": "%", "status": "ok"},
+	"Pressure": {"name": "pressure", "value": 1015.7,"unit": "hPa", "status": "ok"},
+	"Battery": {"name": "battery", "value": 97,"unit": "%", "status": "ok"},
+	"BluetoothConnection": {"name": "bluetooth_connection", "value": 1,"unit": "connected", "status": "ok"}
 }
 ```
 
@@ -106,7 +56,7 @@ Tested and verified on **macOS only** using the built-in Bluetooth stack.
 ## Protocol Reference
 
 This project is based on the official Bluetooth API specification provided by Atmotube:  
-[ATMO Bluetooth API.pdf](ATMO Bluetooth API.pdf) — stored in the root of this repository and originally available at https://support.atmotube.com/en/articles/10364981-bluetooth-api
+[ATMO Bluetooth API.pdf](ATMO%20Bluetooth%20API.pdf) — stored in the root of this repository and originally available at https://support.atmotube.com/en/articles/10364981-bluetooth-api
 
 ## Requirements
 
